@@ -1,0 +1,188 @@
+Process 31685 launched: '/Users/qdequele/Projects/Other/test-sentry/target/debug/test-sentry' (x86_64)
+Process 31685 stopped
+* thread #11, name = 'async-std/executor', stop reason = EXC_BAD_ACCESS (code=EXC_I386_GPFLT)
+    frame #0: 0x000000010098aaee test-sentry`__rbt_macho_add_symtab + 1342
+test-sentry`__rbt_macho_add_symtab:
+->  0x10098aaee <+1342>: cmpq   $0x0, (%rax)
+    0x10098aaf2 <+1346>: je     0x10098ab13               ; <+1379>
+    0x10098aaf8 <+1352>: jmp    0x10098aafd               ; <+1357>
+    0x10098aafd <+1357>: movq   -0x120(%rbp), %rax
+Target 0: (test-sentry) stopped.
+(lldb) up
+frame #1: 0x0000000100989bd9 test-sentry`__rbt_macho_add + 1881
+test-sentry`__rbt_macho_add:
+->  0x100989bd9 <+1881>: cmpl   $0x0, %eax
+    0x100989bdc <+1884>: jne    0x100989be7               ; <+1895>
+    0x100989be2 <+1890>: jmp    0x100989e08               ; <+2440>
+    0x100989be7 <+1895>: movq   0x30(%rbp), %rax
+(lldb) up
+frame #2: 0x0000000100989304 test-sentry`__rbt_backtrace_initialize + 324
+test-sentry`__rbt_backtrace_initialize:
+->  0x100989304 <+324>: cmpl   $0x0, %eax
+    0x100989307 <+327>: jne    0x100989319               ; <+345>
+    0x10098930d <+333>: movl   $0x0, -0x4(%rbp)
+    0x100989314 <+340>: jmp    0x100989433               ; <+627>
+(lldb) up
+frame #3: 0x00000001009889b2 test-sentry`fileline_initialize + 722
+test-sentry`fileline_initialize:
+->  0x1009889b2 <+722>: cmpl   $0x0, %eax
+    0x1009889b5 <+725>: jne    0x1009889c2               ; <+738>
+    0x1009889bb <+731>: movl   $0x1, -0x74(%rbp)
+    0x1009889c2 <+738>: jmp    0x1009889c7               ; <+743>
+(lldb) up
+frame #4: 0x0000000100988aad test-sentry`__rbt_backtrace_syminfo + 45
+test-sentry`__rbt_backtrace_syminfo:
+->  0x100988aad <+45>: cmpl   $0x0, %eax
+    0x100988ab0 <+48>: jne    0x100988ac2               ; <+66>
+    0x100988ab6 <+54>: movl   $0x0, -0x4(%rbp)
+    0x100988abd <+61>: jmp    0x100988b01               ; <+129>
+(lldb) up
+frame #5: 0x000000010097555f test-sentry`backtrace::symbolize::libbacktrace::resolve::h834604e0a856985a(what=ResolveWhat {
+
+}, cb=&mut FnMut<(&backtrace::symbolize::Symbol)> {
+
+}) at libbacktrace.rs:469:8
+   466                  cb(sym);
+   467              },
+   468          };
+-> 469          bt::backtrace_syminfo(
+   470              state,
+   471              symaddr as uintptr_t,
+   472              syminfo_cb,
+(lldb) up
+frame #6: 0x0000000100976b28 test-sentry`backtrace::symbolize::resolve_frame_unsynchronized::h7867cde17ab8ecc6(frame=&0x10280ea08, cb=closure-1(&0x70000ddb9068)) at mod.rs:178:4
+   175  where
+   176      F: FnMut(&Symbol),
+   177  {
+-> 178      resolve_imp(ResolveWhat::Frame(frame), &mut cb)
+   179  }
+   180
+   181  /// A trait representing the resolution of a symbol in a file.
+(lldb) up
+frame #7: 0x0000000100976960 test-sentry`backtrace::symbolize::resolve_frame::h0dbbee5a69045867(frame=&0x10280ea08, cb=closure-1(&0x70000ddb9068)) at mod.rs:105:13
+   102  #[cfg(feature = "std")]
+   103  pub fn resolve_frame<F: FnMut(&Symbol)>(frame: &Frame, cb: F) {
+   104      let _guard = crate::lock::lock();
+-> 105      unsafe { resolve_frame_unsynchronized(frame, cb) }
+   106  }
+   107
+   108  pub enum ResolveWhat<'a> {
+(lldb) up
+frame #8: 0x000000010097066c test-sentry`backtrace::capture::Backtrace::resolve::haa66e15e59bc665b(self=&0x70000ddb9100) at capture.rs:219:41
+   216                      });
+   217                  };
+   218                  match frame.frame {
+-> 219                      Frame::Raw(ref f) => resolve_frame(f, sym),
+   220                      Frame::Deserialized { ip, .. } => {
+   221                          resolve(ip as *mut c_void, sym);
+   222                      }
+(lldb) up
+frame #9: 0x00000001009701ec test-sentry`backtrace::capture::Backtrace::new::h9334dcd33cd8a742 at capture.rs:129:8
+   126      #[inline(never)] // want to make sure there's a frame here to remove
+   127      pub fn new() -> Backtrace {
+   128          let mut bt = Self::create(Self::new as usize);
+-> 129          bt.resolve();
+   130          bt
+   131      }
+   132
+(lldb) up
+frame #10: 0x00000001002b198f test-sentry`sentry::backtrace_support::current_stacktrace::he3aaef4f9b467343 at backtrace_support.rs:178:29
+   175  /// Returns the current backtrace as sentry stacktrace.
+   176  #[allow(unused)]
+   177  pub fn current_stacktrace() -> Option<Stacktrace> {
+-> 178      backtrace_to_stacktrace(&Backtrace::new())
+   179  }
+   180
+   181  /// A helper function to trim a stacktrace.
+(lldb) up
+frame #11: 0x00000001002cc883 test-sentry`sentry::integrations::panic::event_from_panic_info::h4605c3efacc24fad(info=&0x70000ddba970) at panic.rs:55:24
+   52           exception: vec![Exception {
+   53               ty: "panic".into(),
+   54               value: Some(msg.to_string()),
+-> 55               stacktrace: current_stacktrace(),
+   56               ..Default::default()
+   57           }]
+   58           .into(),
+(lldb) up
+frame #12: 0x00000001002cd042 test-sentry`sentry::integrations::panic::panic_handler::_$u7b$$u7b$closure$u7d$$u7d$::h54c98cfaa2fcfe29(hub=&0x104001380) at panic.rs:71:26
+   68   /// Sentry panic handler.
+   69   pub fn panic_handler(info: &PanicInfo<'_>) {
+   70       Hub::with_active(|hub| {
+-> 71           hub.capture_event(event_from_panic_info(info));
+   72       });
+   73   }
+   74
+(lldb) up
+frame #13: 0x00000001002ba399 test-sentry`sentry::hub::Hub::with_active::_$u7b$$u7b$closure$u7d$$u7d$::h0b48c23421c4f933(hub=&0x104001380) at hub.rs:210:20
+   207          with_client_impl! {{
+   208              Hub::with(|hub| {
+   209                  if hub.is_active_and_usage_safe() {
+-> 210                      f(hub)
+   211                  } else {
+   212                      Default::default()
+   213                  }
+(lldb) up
+frame #14: 0x00000001002b9f18 test-sentry`sentry::hub::Hub::with::_$u7b$$u7b$closure$u7d$$u7d$::h1c8275b9321bf670(stack=&0x104001380) at hub.rs:192:16
+   189              // For more information see: run
+   190              THREAD_HUB.with(|stack| unsafe {
+   191                  let ptr = stack.get();
+-> 192                  f(&*ptr)
+   193              })
+   194          }
+   195      }
+(lldb) up
+frame #15: 0x000000010029848b test-sentry`std::thread::local::LocalKey$LT$T$GT$::try_with::h70fe15d732393810(self=&0x100b16cb0, f=closure-0(closure-0(closure-0(&0x70000ddba8e0)))) at local.rs:262:15
+(lldb) up
+frame #16: 0x0000000100297aad test-sentry`std::thread::local::LocalKey$LT$T$GT$::with::h7a1fa11f484826e5(self=&0x100b16cb0, f=closure-0(closure-0(closure-0(&0x70000ddba8e0)))) at local.rs:239:8
+(lldb) up
+frame #17: 0x00000001002b92f9 test-sentry`sentry::hub::Hub::with::h04d0b229948ca72a(f=closure-0(closure-0(&0x70000ddba8e0))) at hub.rs:190:12
+   187              // not on safety: this is safe because even though we change the Arc
+   188              // by temorary binding we guarantee that the original Arc stays alive.
+   189              // For more information see: run
+-> 190              THREAD_HUB.with(|stack| unsafe {
+   191                  let ptr = stack.get();
+   192                  f(&*ptr)
+   193              })
+(lldb) up
+frame #18: 0x00000001002ba31d test-sentry`sentry::hub::Hub::with_active::h23c4d7996b1d7184(f=closure-0(&0x70000ddba8e0)) at hub.rs:208:12
+   205          R: Default,
+   206      {
+   207          with_client_impl! {{
+-> 208              Hub::with(|hub| {
+   209                  if hub.is_active_and_usage_safe() {
+   210                      f(hub)
+   211                  } else {
+(lldb) up
+frame #19: 0x00000001002ccfed test-sentry`sentry::integrations::panic::panic_handler::hf863131767827c82(info=&0x70000ddba970) at panic.rs:70:4
+   67   /// double faults in some cases where it's known to be unsafe to invoke the
+   68   /// Sentry panic handler.
+   69   pub fn panic_handler(info: &PanicInfo<'_>) {
+-> 70       Hub::with_active(|hub| {
+   71           hub.capture_event(event_from_panic_info(info));
+   72       });
+   73   }
+(lldb) up
+frame #20: 0x00000001002cd109 test-sentry`sentry::integrations::panic::register_panic_handler::_$u7b$$u7b$closure$u7d$$u7d$::heb9d85debcc03631(info=&0x70000ddba970) at panic.rs:87:8
+   84   pub fn register_panic_handler() {
+   85       let next = panic::take_hook();
+   86       panic::set_hook(Box::new(move |info| {
+-> 87           panic_handler(info);
+   88           next(info);
+   89       }));
+   90   }
+(lldb) up
+test-sentry was compiled with optimization - stepping may behave oddly; variables may not be available.
+frame #21: 0x00000001009aeeea test-sentry`std::panicking::rust_panic_with_hook::hccde7faed9a5c398 at panicking.rs:476:16 [opt]
+(lldb) up
+frame #22: 0x00000001009d484e test-sentry`std::panicking::begin_panic::h5dcce27ce5ee7988(msg="this is a panic") at panicking.rs:399:4
+(lldb) up
+frame #23: 0x0000000100074eaf test-sentry`test_sentry::main::_$u7b$$u7b$closure$u7d$$u7d$::_$u7b$$u7b$closure$u7d$$u7d$::h4afd4408db1a9863((null)=Pin<test_sentry::main::{{closure}}::generator-0 *> {
+pointer: &0x101e052f8
+}) at main.rs:13:8
+   10
+   11       let mut app = tide::new();
+   12       app.at("/").get(|_| async move {
+-> 13           panic!("this is a panic");
+   14           ""
+   15       });
+   16
